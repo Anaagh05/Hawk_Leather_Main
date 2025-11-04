@@ -8,6 +8,7 @@ export const allProducts: Product[] = [
     price: 299,
     image: "https://images.unsplash.com/photo-1624687943971-e86af76d57de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwdG90ZSUyMGJhZ3xlbnwxfHx8fDE3NTk5NTU4ODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
     category: "Bags",
+    gender: "Women",
     description: "A timeless tote bag crafted from premium full-grain leather. Perfect for everyday use, it combines functionality with elegant design. The spacious interior accommodates all your essentials while maintaining a sleek silhouette.",
     features: [
       "Premium full-grain leather construction",
@@ -32,6 +33,7 @@ export const allProducts: Product[] = [
     price: 89,
     image: "https://images.unsplash.com/photo-1689844495806-321b5adaf5d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwcHVyc2UlMjB3YWxsZXR8ZW58MXx8fHwxNzU5OTkyNzcxfDA&ixlib=rb-4.1.0&q=80&w=1080",
     category: "Purses",
+    gender: "Unisex",
     description: "A sleek, minimalist wallet designed for those who appreciate simplicity. This slim profile wallet holds all your essentials without the bulk, featuring RFID-blocking technology for added security.",
     features: [
       "RFID-blocking technology",
@@ -56,6 +58,7 @@ export const allProducts: Product[] = [
     price: 129,
     image: "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwYmVsdHxlbnwxfHx8fDE3NTk5OTI3NzJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
     category: "Belts",
+    gender: "Men",
     description: "An essential accessory crafted from a single piece of premium leather. This versatile belt features a timeless design that complements both casual and formal attire.",
     features: [
       "Single-piece leather construction",
@@ -80,6 +83,7 @@ export const allProducts: Product[] = [
     price: 449,
     image: "https://images.unsplash.com/photo-1611688599669-e0d5a0497670?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBsZWF0aGVyJTIwYmFnfGVufDF8fHx8MTc1OTk1NTg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
     category: "Bags",
+    gender: "Men",
     description: "A sophisticated briefcase designed for the modern professional. Featuring multiple compartments and a padded laptop sleeve, this briefcase combines classic styling with contemporary functionality.",
     features: [
       "Padded laptop compartment (fits up to 15\")",
@@ -104,6 +108,7 @@ export const allProducts: Product[] = [
     price: 279,
     image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=1080",
     category: "Bags",
+    gender: "Unisex",
     description: "A versatile crossbody messenger bag perfect for daily commutes and adventures. Features adjustable strap and multiple compartments for organized storage.",
     features: [
       "Adjustable crossbody strap",
@@ -128,6 +133,7 @@ export const allProducts: Product[] = [
     price: 389,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1080",
     category: "Bags",
+    gender: "Men",
     description: "A spacious duffle bag for weekend getaways and short trips. Combines durability with style, featuring a large main compartment and convenient side pockets.",
     features: [
       "Large main compartment",
@@ -152,6 +158,7 @@ export const allProducts: Product[] = [
     price: 329,
     image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=1080",
     category: "Bags",
+    gender: "Women",
     description: "A classic structured satchel with modern refinements. Features a top handle and detachable strap for versatile carrying options.",
     features: [
       "Structured silhouette",
@@ -176,6 +183,7 @@ export const allProducts: Product[] = [
     price: 349,
     image: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=1080",
     category: "Bags",
+    gender: "Unisex",
     description: "A contemporary leather backpack that seamlessly transitions from work to weekend. Features padded straps and multiple compartments.",
     features: [
       "Padded adjustable straps",
@@ -201,6 +209,7 @@ export const allProducts: Product[] = [
     price: 79,
     image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=1080",
     category: "Purses",
+    gender: "Men",
     description: "A classic bi-fold wallet with ample storage for cards and cash. Timeless design meets modern functionality.",
     features: [
       "8 card slots",
@@ -225,6 +234,7 @@ export const allProducts: Product[] = [
     price: 59,
     image: "https://images.unsplash.com/photo-1612721411190-ffe0baf5a7c8?w=1080",
     category: "Purses",
+    gender: "Unisex",
     description: "An ultra-slim card holder for the minimalist. Holds essential cards in a compact, elegant package.",
     features: [
       "4 card slots",
@@ -249,6 +259,7 @@ export const allProducts: Product[] = [
     price: 119,
     image: "https://images.unsplash.com/photo-1591561954557-26941169b49e?w=1080",
     category: "Purses",
+    gender: "Women",
     description: "A secure zip-around wallet with generous storage capacity. Features multiple card slots and compartments.",
     features: [
       "12 card slots",
@@ -273,6 +284,7 @@ export const allProducts: Product[] = [
     price: 99,
     image: "https://images.unsplash.com/photo-1618517351616-38fb9c5210c6?w=1080",
     category: "Purses",
+    gender: "Women",
     description: "A versatile clutch wallet that transitions from day to evening. Removable wrist strap included.",
     features: [
       "10 card slots",
@@ -297,6 +309,7 @@ export const allProducts: Product[] = [
     price: 69,
     image: "https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?w=1080",
     category: "Purses",
+    gender: "Men",
     description: "A sleek money clip wallet for those who prefer carrying cash. Minimal bulk with maximum style.",
     features: [
       "Stainless steel money clip",
@@ -322,6 +335,7 @@ export const allProducts: Product[] = [
     price: 79,
     image: "https://images.unsplash.com/photo-1624222247344-550fb60583c3?w=1080",
     category: "Belts",
+    gender: "Unisex",
     description: "A casual belt featuring canvas body with leather trim. Perfect for weekend wear and casual outings.",
     features: [
       "Canvas construction",
@@ -346,6 +360,7 @@ export const allProducts: Product[] = [
     price: 149,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1080",
     category: "Belts",
+    gender: "Men",
     description: "An elegant dress belt for formal occasions. Features premium calf leather and polished buckle.",
     features: [
       "Premium calf leather",
@@ -370,6 +385,7 @@ export const allProducts: Product[] = [
     price: 139,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1080",
     category: "Belts",
+    gender: "Women",
     description: "A unique woven leather belt that adds texture and interest. Handcrafted using traditional braiding techniques.",
     features: [
       "Hand-woven leather",
@@ -394,6 +410,7 @@ export const allProducts: Product[] = [
     price: 99,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1080",
     category: "Belts",
+    gender: "Unisex",
     description: "A contemporary belt with double ring closure. Adjustable and stylish for casual wear.",
     features: [
       "Double D-ring closure",
@@ -418,6 +435,7 @@ export const allProducts: Product[] = [
     price: 159,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1080",
     category: "Belts",
+    gender: "Unisex",
     description: "A bold statement belt featuring metal studs. Perfect for adding edge to any outfit.",
     features: [
       "Metal stud detailing",

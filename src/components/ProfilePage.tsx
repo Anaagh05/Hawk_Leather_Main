@@ -1,19 +1,5 @@
 import { useState } from "react";
-import React from "react";
-import {
-  ArrowLeft,
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  MapPin,
-  User as UserIcon,
-  Mail,
-  Phone,
-  Star,
-  Send,
-  Briefcase,
-} from "lucide-react";
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, User as UserIcon, Mail, Phone, Star, Send, Briefcase, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -27,54 +13,83 @@ import { mockOrders, Order } from "../data/orders";
 import { motion } from "motion/react";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
-import { toast } from "sonner";
+import { toast } from "sonner@2.0.3";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 interface ProfilePageProps {
   onBack: () => void;
+  onCheckout: () => void;
 }
 
-export function ProfilePage({ onBack }: ProfilePageProps) {
+export function ProfilePage({ onBack, onCheckout }: ProfilePageProps) {
   const { user } = useAuth();
   const { cartItems, getCartTotal } = useCart();
-  const [orders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [submittedReviews, setSubmittedReviews] = useState<
-    Array<{
-      id: string;
-      rating: number;
-      text: string;
-      date: string;
-    }>
-  >([]);
+  const [submittedReviews, setSubmittedReviews] = useState<Array<{
+    id: string;
+    rating: number;
+    text: string;
+    date: string;
+  }>>([]);
 
-  const getStatusColor = (status: Order["status"]) => {
+  // Pagination states for each tab
+  const [allOrdersPage, setAllOrdersPage] = useState(1);
+  const [cartPage, setCartPage] = useState(1);
+  const [pendingPage, setPendingPage] = useState(1);
+  const [completedPage, setCompletedPage] = useState(1);
+  
+  // Items per page
+  const itemsPerPage = 3;
+
+  // Cancel order dialog state
+  const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
+
+  const getStatusColor = (status: Order['status']) => {
     switch (status) {
-      case "delivered":
-        return "bg-green-500";
-      case "shipped":
-        return "bg-blue-500";
-      case "processing":
-        return "bg-yellow-500";
-      case "pending":
-        return "bg-orange-500";
-      case "cancelled":
-        return "bg-red-500";
+      case 'delivered':
+        return 'bg-green-500';
+      case 'shipped':
+        return 'bg-blue-500';
+      case 'processing':
+        return 'bg-yellow-500';
+      case 'pending':
+        return 'bg-orange-500';
+      case 'cancelled':
+        return 'bg-red-500';
       default:
-        return "bg-gray-500";
+        return 'bg-gray-500';
     }
   };
 
-  const getStatusIcon = (status: Order["status"]) => {
+  const getStatusIcon = (status: Order['status']) => {
     switch (status) {
-      case "delivered":
+      case 'delivered':
         return <CheckCircle className="h-4 w-4" />;
-      case "shipped":
+      case 'shipped':
         return <Truck className="h-4 w-4" />;
-      case "processing":
-      case "pending":
+      case 'processing':
+      case 'pending':
         return <Clock className="h-4 w-4" />;
       default:
         return <Package className="h-4 w-4" />;
@@ -95,11 +110,11 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
       id: `review-${Date.now()}`,
       rating,
       text: reviewText,
-      date: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
+      date: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
     };
 
     setSubmittedReviews([newReview, ...submittedReviews]);
@@ -107,6 +122,43 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
     setReviewText("");
     toast.success("Review submitted successfully!");
   };
+
+  const handleCancelOrder = () => {
+    if (!orderToCancel) return;
+    
+    // Update order status to cancelled
+    setOrders(orders.map(order => 
+      order.id === orderToCancel 
+        ? { ...order, status: 'cancelled' as const }
+        : order
+    ));
+    
+    toast.success("Order cancelled successfully!");
+    setOrderToCancel(null);
+  };
+
+  // Helper function to paginate array
+  const paginateArray = <T,>(array: T[], page: number): T[] => {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return array.slice(startIndex, endIndex);
+  };
+
+  // Helper function to calculate total pages
+  const getTotalPages = (totalItems: number): number => {
+    return Math.ceil(totalItems / itemsPerPage);
+  };
+
+  // Filter orders
+  const allOrders = orders.filter(o => o.status !== 'cancelled');
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'processing');
+  const completedOrders = orders.filter(o => o.status === 'delivered');
+
+  // Paginated data
+  const paginatedAllOrders = paginateArray(allOrders, allOrdersPage);
+  const paginatedCartItems = paginateArray(cartItems, cartPage);
+  const paginatedPendingOrders = paginateArray(pendingOrders, pendingPage);
+  const paginatedCompletedOrders = paginateArray(completedOrders, completedPage);
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -132,14 +184,10 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4">
-                    <span className="text-3xl">
-                      {user?.name?.charAt(0) || "U"}
-                    </span>
+                    <span className="text-3xl">{user?.name?.charAt(0) || 'U'}</span>
                   </div>
-                  <h2 className="mb-2">{user?.name || "Guest User"}</h2>
-                  <p className="text-muted-foreground mb-6">
-                    {user?.email || "guest@example.com"}
-                  </p>
+                  <h2 className="mb-2">{user?.name || 'Guest User'}</h2>
+                  <p className="text-muted-foreground mb-6">{user?.email || 'guest@example.com'}</p>
 
                   <Separator className="my-6" />
 
@@ -147,10 +195,8 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                     <div className="flex items-start gap-3">
                       <UserIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-sm text-muted-foreground">
-                          Full Name
-                        </p>
-                        <p>{user?.name || "John Doe"}</p>
+                        <p className="text-sm text-muted-foreground">Full Name</p>
+                        <p>{user?.name || 'John Doe'}</p>
                       </div>
                     </div>
 
@@ -158,9 +204,7 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                       <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="break-all">
-                          {user?.email || "john.doe@example.com"}
-                        </p>
+                        <p className="break-all">{user?.email || 'john.doe@example.com'}</p>
                       </div>
                     </div>
 
@@ -168,17 +212,15 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                       <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm text-muted-foreground">Phone</p>
-                        <p>{user?.phone || "+1 (555) 123-4567"}</p>
+                        <p>{user?.phone || '+1 (555) 123-4567'}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
                       <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-sm text-muted-foreground">
-                          Occupation
-                        </p>
-                        <p>{user?.occupation || "Software Developer"}</p>
+                        <p className="text-sm text-muted-foreground">Occupation</p>
+                        <p>{user?.occupation || 'Software Developer'}</p>
                       </div>
                     </div>
 
@@ -186,19 +228,20 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                       <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm text-muted-foreground">Address</p>
-                        <p>
-                          {user?.address ||
-                            "123 Main Street, New York, NY 10001"}
-                        </p>
+                        <p>{user?.address || '123 Main Street'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">City & State</p>
+                        <p>{user?.city || 'New York'}, {user?.state || 'NY'}</p>
                       </div>
                     </div>
                   </div>
 
-                  <Button
-                    className="w-full mt-6"
-                    variant="outline"
-                    onClick={() => setIsEditDialogOpen(true)}
-                  >
+                  <Button className="w-full mt-6" variant="outline" onClick={() => setIsEditDialogOpen(true)}>
                     Edit Profile
                   </Button>
                 </div>
@@ -213,23 +256,23 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <Tabs defaultValue="orders" className="w-full">
+            <Tabs defaultValue="allOrders" className="w-full">
               <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="orders">Orders</TabsTrigger>
+                <TabsTrigger value="allOrders">All Orders</TabsTrigger>
                 <TabsTrigger value="cart">Cart</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="tracking">Tracking</TabsTrigger>
+                <TabsTrigger value="completed">Completed</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
 
-              {/* Orders Tab */}
-              <TabsContent value="orders" className="space-y-4">
+              {/* All Orders Tab */}
+              <TabsContent value="allOrders" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Order History</CardTitle>
+                    <CardTitle>All Orders ({allOrders.length})</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {orders.map((order, index) => (
+                    {paginatedAllOrders.map((order, index) => (
                       <motion.div
                         key={order.id}
                         initial={{ opacity: 0, y: 20 }}
@@ -242,25 +285,16 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                               <div>
                                 <h3 className="mb-1">{order.orderNumber}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                  Placed on{" "}
-                                  {new Date(order.date).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                    }
-                                  )}
+                                  Placed on {new Date(order.date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
                                 </p>
                               </div>
-                              <Badge
-                                className={`${getStatusColor(
-                                  order.status
-                                )} text-white flex items-center gap-1`}
-                              >
+                              <Badge className={`${getStatusColor(order.status)} text-white flex items-center gap-1`}>
                                 {getStatusIcon(order.status)}
-                                {order.status.charAt(0).toUpperCase() +
-                                  order.status.slice(1)}
+                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </Badge>
                             </div>
 
@@ -296,18 +330,54 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
 
                             {order.trackingNumber && (
                               <div className="mt-4 p-3 bg-muted rounded-lg">
-                                <p className="text-sm text-muted-foreground mb-1">
-                                  Tracking Number
-                                </p>
-                                <p className="text-sm font-mono">
-                                  {order.trackingNumber}
-                                </p>
+                                <p className="text-sm text-muted-foreground mb-1">Tracking Number</p>
+                                <p className="text-sm font-mono">{order.trackingNumber}</p>
                               </div>
                             )}
                           </CardContent>
                         </Card>
                       </motion.div>
                     ))}
+
+                    {allOrders.length === 0 && (
+                      <div className="text-center py-12">
+                        <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No orders found</p>
+                      </div>
+                    )}
+
+                    {/* Pagination */}
+                    {allOrders.length > itemsPerPage && (
+                      <div className="flex justify-center pt-4">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious 
+                                onClick={() => setAllOrdersPage(Math.max(1, allOrdersPage - 1))}
+                                className={allOrdersPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              />
+                            </PaginationItem>
+                            {[...Array(getTotalPages(allOrders.length))].map((_, i) => (
+                              <PaginationItem key={i}>
+                                <PaginationLink
+                                  onClick={() => setAllOrdersPage(i + 1)}
+                                  isActive={allOrdersPage === i + 1}
+                                  className="cursor-pointer"
+                                >
+                                  {i + 1}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))}
+                            <PaginationItem>
+                              <PaginationNext 
+                                onClick={() => setAllOrdersPage(Math.min(getTotalPages(allOrders.length), allOrdersPage + 1))}
+                                className={allOrdersPage === getTotalPages(allOrders.length) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -316,24 +386,19 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
               <TabsContent value="cart">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Shopping Cart</CardTitle>
+                    <CardTitle>Shopping Cart ({cartItems.length})</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {cartItems.length === 0 ? (
                       <div className="text-center py-12">
                         <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground mb-4">
-                          Your cart is empty
-                        </p>
+                        <p className="text-muted-foreground mb-4">Your cart is empty</p>
                         <Button onClick={onBack}>Continue Shopping</Button>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {cartItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex gap-4 p-4 bg-muted rounded-lg"
-                          >
+                        {paginatedCartItems.map((item) => (
+                          <div key={item.id} className="flex gap-4 p-4 bg-muted rounded-lg">
                             <div className="w-20 h-20 rounded bg-background overflow-hidden flex-shrink-0">
                               <ImageWithFallback
                                 src={item.image}
@@ -343,18 +408,47 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                             </div>
                             <div className="flex-1">
                               <h4 className="mb-1">{item.name}</h4>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                {item.category}
-                              </p>
+                              <p className="text-sm text-muted-foreground mb-2">{item.category}</p>
                               <p>Qty: {item.quantity}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-xl">
-                                ₹{item.price * item.quantity}
-                              </p>
+                              <p className="text-xl">₹{item.price * item.quantity}</p>
                             </div>
                           </div>
                         ))}
+
+                        {/* Pagination */}
+                        {cartItems.length > itemsPerPage && (
+                          <div className="flex justify-center pt-4">
+                            <Pagination>
+                              <PaginationContent>
+                                <PaginationItem>
+                                  <PaginationPrevious 
+                                    onClick={() => setCartPage(Math.max(1, cartPage - 1))}
+                                    className={cartPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                  />
+                                </PaginationItem>
+                                {[...Array(getTotalPages(cartItems.length))].map((_, i) => (
+                                  <PaginationItem key={i}>
+                                    <PaginationLink
+                                      onClick={() => setCartPage(i + 1)}
+                                      isActive={cartPage === i + 1}
+                                      className="cursor-pointer"
+                                    >
+                                      {i + 1}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                ))}
+                                <PaginationItem>
+                                  <PaginationNext 
+                                    onClick={() => setCartPage(Math.min(getTotalPages(cartItems.length), cartPage + 1))}
+                                    className={cartPage === getTotalPages(cartItems.length) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                  />
+                                </PaginationItem>
+                              </PaginationContent>
+                            </Pagination>
+                          </div>
+                        )}
 
                         <Separator className="my-4" />
 
@@ -363,7 +457,7 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                           <p>₹{getCartTotal().toFixed(2)}</p>
                         </div>
 
-                        <Button className="w-full" size="lg">
+                        <Button className="w-full" size="lg" onClick={onCheckout}>
                           Proceed to Checkout
                         </Button>
                       </div>
@@ -376,220 +470,246 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
               <TabsContent value="pending">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Pending Orders</CardTitle>
+                    <CardTitle>Pending Orders ({pendingOrders.length})</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {orders
-                      .filter(
-                        (o) =>
-                          o.status === "pending" || o.status === "processing"
-                      )
-                      .map((order) => (
-                        <Card key={order.id}>
-                          <CardContent className="pt-6">
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="mb-1">{order.orderNumber}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {order.estimatedDelivery}
-                                </p>
-                              </div>
-                              <Badge
-                                className={`${getStatusColor(
-                                  order.status
-                                )} text-white`}
-                              >
+                    {paginatedPendingOrders.map((order) => (
+                      <Card key={order.id}>
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <h3 className="mb-1">{order.orderNumber}</h3>
+                              <p className="text-sm text-muted-foreground">{order.estimatedDelivery}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={`${getStatusColor(order.status)} text-white`}>
                                 {order.status}
                               </Badge>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setOrderToCancel(order.id)}
+                                title="Cancel Order"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <p className="text-muted-foreground mb-6">
-                              {order.items.length} item
-                              {order.items.length > 1 ? "s" : ""} • $
-                              {order.total}
-                            </p>
+                          </div>
+                          <p className="text-muted-foreground mb-6">
+                            {order.items.length} item{order.items.length > 1 ? 's' : ''} • ₹{order.total}
+                          </p>
 
-                            {/* Timeline */}
-                            <div className="relative">
-                              <div className="flex items-center justify-between">
-                                {/* Processing Stage */}
-                                <div className="flex flex-col items-center flex-1">
-                                  <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                      order.status === "processing" ||
-                                      order.status === "shipped" ||
-                                      order.status === "delivered"
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
-                                    }`}
-                                  >
-                                    <Clock className="h-5 w-5" />
-                                  </div>
-                                  <p className="text-xs mt-2 text-center">
-                                    Processing
-                                  </p>
+                          {/* Timeline */}
+                          <div className="relative">
+                            <div className="flex items-center justify-between">
+                              {/* Processing Stage */}
+                              <div className="flex flex-col items-center flex-1">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                                  order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground'
+                                }`}>
+                                  <Clock className="h-5 w-5" />
                                 </div>
+                                <p className="text-xs mt-2 text-center">Processing</p>
+                              </div>
 
-                                {/* Connecting Line 1 */}
-                                <div
-                                  className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
-                                    order.status === "shipped" ||
-                                    order.status === "delivered"
-                                      ? "bg-primary"
-                                      : "bg-muted"
-                                  }`}
-                                />
+                              {/* Connecting Line 1 */}
+                              <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
+                                order.status === 'shipped' || order.status === 'delivered'
+                                  ? 'bg-primary'
+                                  : 'bg-muted'
+                              }`} />
 
-                                {/* Shipped Stage */}
-                                <div className="flex flex-col items-center flex-1">
-                                  <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                      order.status === "shipped" ||
-                                      order.status === "delivered"
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
-                                    }`}
-                                  >
-                                    <Truck className="h-5 w-5" />
-                                  </div>
-                                  <p className="text-xs mt-2 text-center">
-                                    Shipped
-                                  </p>
+                              {/* Shipped Stage */}
+                              <div className="flex flex-col items-center flex-1">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                                  order.status === 'shipped' || order.status === 'delivered'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground'
+                                }`}>
+                                  <Truck className="h-5 w-5" />
                                 </div>
+                                <p className="text-xs mt-2 text-center">Shipped</p>
+                              </div>
 
-                                {/* Connecting Line 2 */}
-                                <div
-                                  className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
-                                    order.status === "delivered"
-                                      ? "bg-primary"
-                                      : "bg-muted"
-                                  }`}
-                                />
+                              {/* Connecting Line 2 */}
+                              <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
+                                order.status === 'delivered'
+                                  ? 'bg-primary'
+                                  : 'bg-muted'
+                              }`} />
 
-                                {/* Delivered Stage */}
-                                <div className="flex flex-col items-center flex-1">
-                                  <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                                      order.status === "delivered"
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
-                                    }`}
-                                  >
-                                    <CheckCircle className="h-5 w-5" />
-                                  </div>
-                                  <p className="text-xs mt-2 text-center">
-                                    Delivered
-                                  </p>
+                              {/* Delivered Stage */}
+                              <div className="flex flex-col items-center flex-1">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                                  order.status === 'delivered'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground'
+                                }`}>
+                                  <CheckCircle className="h-5 w-5" />
                                 </div>
+                                <p className="text-xs mt-2 text-center">Delivered</p>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    {orders.filter(
-                      (o) => o.status === "pending" || o.status === "processing"
-                    ).length === 0 && (
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+
+                    {pendingOrders.length === 0 && (
                       <div className="text-center py-12">
                         <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">
-                          No pending orders
-                        </p>
+                        <p className="text-muted-foreground">No pending orders</p>
+                      </div>
+                    )}
+
+                    {/* Pagination */}
+                    {pendingOrders.length > itemsPerPage && (
+                      <div className="flex justify-center pt-4">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious 
+                                onClick={() => setPendingPage(Math.max(1, pendingPage - 1))}
+                                className={pendingPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              />
+                            </PaginationItem>
+                            {[...Array(getTotalPages(pendingOrders.length))].map((_, i) => (
+                              <PaginationItem key={i}>
+                                <PaginationLink
+                                  onClick={() => setPendingPage(i + 1)}
+                                  isActive={pendingPage === i + 1}
+                                  className="cursor-pointer"
+                                >
+                                  {i + 1}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))}
+                            <PaginationItem>
+                              <PaginationNext 
+                                onClick={() => setPendingPage(Math.min(getTotalPages(pendingOrders.length), pendingPage + 1))}
+                                className={pendingPage === getTotalPages(pendingOrders.length) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* Tracking Tab */}
-              <TabsContent value="tracking">
+              {/* Completed Tab */}
+              <TabsContent value="completed">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Order Tracking</CardTitle>
+                    <CardTitle>Completed Orders ({completedOrders.length})</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    {orders
-                      .filter((o) => o.trackingNumber)
-                      .map((order) => (
-                        <Card key={order.id}>
+                  <CardContent className="space-y-4">
+                    {paginatedCompletedOrders.map((order, index) => (
+                      <motion.div
+                        key={order.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                      >
+                        <Card>
                           <CardContent className="pt-6">
-                            <div className="flex justify-between items-start mb-4">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
                               <div>
                                 <h3 className="mb-1">{order.orderNumber}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                  Tracking: {order.trackingNumber}
+                                  {order.estimatedDelivery}
                                 </p>
                               </div>
-                              <Badge
-                                className={`${getStatusColor(
-                                  order.status
-                                )} text-white`}
-                              >
-                                {order.status}
+                              <Badge className="bg-green-500 text-white flex items-center gap-1">
+                                <CheckCircle className="h-4 w-4" />
+                                Delivered
                               </Badge>
                             </div>
 
                             <Separator className="my-4" />
 
-                            <div className="space-y-4">
-                              <div className="flex gap-4">
-                                <div
-                                  className={`w-8 h-8 rounded-full ${
-                                    order.status === "delivered" ||
-                                    order.status === "shipped" ||
-                                    order.status === "processing"
-                                      ? "bg-primary"
-                                      : "bg-muted"
-                                  } flex items-center justify-center flex-shrink-0`}
-                                >
-                                  <CheckCircle className="h-4 w-4 text-primary-foreground" />
+                            <div className="space-y-3 mb-4">
+                              {order.items.map((item) => (
+                                <div key={item.id} className="flex gap-3">
+                                  <div className="w-16 h-16 rounded bg-muted overflow-hidden flex-shrink-0">
+                                    <ImageWithFallback
+                                      src={item.image}
+                                      alt={item.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="mb-1">{item.name}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Qty: {item.quantity} × ₹{item.price}
+                                    </p>
+                                  </div>
+                                  <p>₹{item.price * item.quantity}</p>
                                 </div>
-                                <div className="flex-1">
-                                  <p>Order Confirmed</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Your order has been received
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="flex gap-4">
-                                <div
-                                  className={`w-8 h-8 rounded-full ${
-                                    order.status === "delivered" ||
-                                    order.status === "shipped"
-                                      ? "bg-primary"
-                                      : "bg-muted"
-                                  } flex items-center justify-center flex-shrink-0`}
-                                >
-                                  <Package className="h-4 w-4 text-primary-foreground" />
-                                </div>
-                                <div className="flex-1">
-                                  <p>Shipped</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Package is on its way
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="flex gap-4">
-                                <div
-                                  className={`w-8 h-8 rounded-full ${
-                                    order.status === "delivered"
-                                      ? "bg-primary"
-                                      : "bg-muted"
-                                  } flex items-center justify-center flex-shrink-0`}
-                                >
-                                  <Truck className="h-4 w-4 text-primary-foreground" />
-                                </div>
-                                <div className="flex-1">
-                                  <p>Out for Delivery</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {order.estimatedDelivery}
-                                  </p>
-                                </div>
-                              </div>
+                              ))}
                             </div>
+
+                            <Separator className="my-4" />
+
+                            <div className="flex justify-between items-center">
+                              <p>Total</p>
+                              <p className="text-xl">₹{order.total}</p>
+                            </div>
+
+                            {order.trackingNumber && (
+                              <div className="mt-4 p-3 bg-muted rounded-lg">
+                                <p className="text-sm text-muted-foreground mb-1">Tracking Number</p>
+                                <p className="text-sm font-mono">{order.trackingNumber}</p>
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
-                      ))}
+                      </motion.div>
+                    ))}
+
+                    {completedOrders.length === 0 && (
+                      <div className="text-center py-12">
+                        <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">No completed orders</p>
+                      </div>
+                    )}
+
+                    {/* Pagination */}
+                    {completedOrders.length > itemsPerPage && (
+                      <div className="flex justify-center pt-4">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious 
+                                onClick={() => setCompletedPage(Math.max(1, completedPage - 1))}
+                                className={completedPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              />
+                            </PaginationItem>
+                            {[...Array(getTotalPages(completedOrders.length))].map((_, i) => (
+                              <PaginationItem key={i}>
+                                <PaginationLink
+                                  onClick={() => setCompletedPage(i + 1)}
+                                  isActive={completedPage === i + 1}
+                                  className="cursor-pointer"
+                                >
+                                  {i + 1}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))}
+                            <PaginationItem>
+                              <PaginationNext 
+                                onClick={() => setCompletedPage(Math.min(getTotalPages(completedOrders.length), completedPage + 1))}
+                                className={completedPage === getTotalPages(completedOrders.length) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -618,8 +738,8 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                               <Star
                                 className={`h-8 w-8 ${
                                   star <= (hoveredRating || rating)
-                                    ? "fill-primary text-primary"
-                                    : "text-muted-foreground"
+                                    ? 'fill-primary text-primary'
+                                    : 'text-muted-foreground'
                                 }`}
                               />
                             </button>
@@ -675,9 +795,7 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                                       {review.date}
                                     </p>
                                   </div>
-                                  <p className="text-muted-foreground">
-                                    {review.text}
-                                  </p>
+                                  <p className="text-muted-foreground">{review.text}</p>
                                 </CardContent>
                               </Card>
                             </motion.div>
@@ -697,6 +815,24 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
           isOpen={isEditDialogOpen}
           onClose={() => setIsEditDialogOpen(false)}
         />
+
+        {/* Cancel Order Dialog */}
+        <AlertDialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to cancel this order? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Order</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCancelOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Cancel Order
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

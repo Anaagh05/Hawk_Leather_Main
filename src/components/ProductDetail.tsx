@@ -1,10 +1,11 @@
 import { ArrowLeft, Check, Package, Shield, Star, Truck } from "lucide-react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Product, useCart } from "./CartContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { toast } from "sonner";
-import React from "react";
+import { toast } from "sonner@2.0.3";
+
 interface ProductDetailProps {
   product: Product;
   onBack: () => void;
@@ -43,7 +44,14 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <p className="text-muted-foreground mb-2">{product.category}</p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-muted-foreground">{product.category}</p>
+                {product.gender && (
+                  <Badge variant="secondary" className="text-xs">
+                    {product.gender}
+                  </Badge>
+                )}
+              </div>
               <h1 className="mb-4">{product.name}</h1>
               <p className="text-3xl">₹{product.price.toFixed(2)}</p>
             </div>
@@ -71,12 +79,9 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
               </ul>
             </div>
 
-            <div className="space-y-4 pt-6">
+            <div className="pt-6">
               <Button size="lg" className="w-full" onClick={handleAddToCart}>
                 Add to Cart
-              </Button>
-              <Button size="lg" variant="outline" className="w-full">
-                Buy Now
               </Button>
             </div>
 

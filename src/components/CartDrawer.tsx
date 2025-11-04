@@ -1,6 +1,5 @@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./ui/sheet";
 import { useCart } from "./CartContext";
-import React from "react";
 import { useAuth } from "./AuthContext";
 import { Button } from "./ui/button";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
@@ -12,9 +11,10 @@ interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginRequired: () => void;
+  onCheckout: () => void;
 }
 
-export function CartDrawer({ isOpen, onClose, onLoginRequired }: CartDrawerProps) {
+export function CartDrawer({ isOpen, onClose, onLoginRequired, onCheckout }: CartDrawerProps) {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
 
@@ -29,7 +29,8 @@ export function CartDrawer({ isOpen, onClose, onLoginRequired }: CartDrawerProps
       onLoginRequired();
     } else {
       // Proceed to checkout
-      alert('Proceeding to checkout...');
+      onClose();
+      onCheckout();
     }
   };
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
@@ -24,6 +23,7 @@ import { ProductDetail } from "./components/ProductDetail";
 import { ProductListPage } from "./components/ProductListPage";
 import { TestimonialsPage } from "./components/TestimonialsPage";
 import { ProfilePage } from "./components/ProfilePage";
+import { CheckoutPage } from "./components/CheckoutPage";
 import { Testimonials } from "./components/Testimonials";
 import { LoginDialog } from "./components/LoginDialog";
 import { Toaster } from "./components/ui/sonner";
@@ -44,7 +44,8 @@ type ViewType =
   | "purses"
   | "belts"
   | "testimonials"
-  | "profile";
+  | "profile"
+  | "checkout";
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -97,6 +98,15 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleViewCheckout = () => {
+    if (!isAuthenticated) {
+      setIsLoginOpen(true);
+      return;
+    }
+    setCurrentView("checkout");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleHomeClick = () => {
     if (currentView !== "home") {
       setCurrentView("home");
@@ -139,7 +149,10 @@ function AppContent() {
         );
 
       case "profile":
-        return <ProfilePage onBack={handleBackToHome} />;
+        return <ProfilePage onBack={handleBackToHome} onCheckout={handleViewCheckout} />;
+
+      case "checkout":
+        return <CheckoutPage onBack={handleViewProfile} />;
 
       case "all-products":
         return (
@@ -360,6 +373,7 @@ function AppContent() {
                   price={`₹ ${product.price}`}
                   image={product.image}
                   category={product.category}
+                  gender={product.gender}
                   onClick={() => handleProductClick(product)}
                 />
               </motion.div>
@@ -571,6 +585,7 @@ function AppContent() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         onLoginRequired={() => setIsLoginOpen(true)}
+        onCheckout={handleViewCheckout}
       />
 
       <LoginDialog

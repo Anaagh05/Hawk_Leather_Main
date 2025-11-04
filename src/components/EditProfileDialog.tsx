@@ -1,4 +1,3 @@
-import React from "react";
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
@@ -6,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { useAuth } from './AuthContext';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 
 interface EditProfileDialogProps {
   isOpen: boolean;
@@ -21,6 +20,8 @@ export function EditProfileDialog({ isOpen, onClose }: EditProfileDialogProps) {
     name: '',
     phone: '',
     address: '',
+    city: '',
+    state: '',
     occupation: '',
   });
 
@@ -29,7 +30,9 @@ export function EditProfileDialog({ isOpen, onClose }: EditProfileDialogProps) {
       setFormData({
         name: user.name || '',
         phone: user.phone || '+1 (555) 123-4567',
-        address: user.address || '123 Main Street, New York, NY 10001',
+        address: user.address || '123 Main Street',
+        city: user.city || 'New York',
+        state: user.state || 'NY',
         occupation: user.occupation || 'Software Developer',
       });
     }
@@ -116,6 +119,28 @@ export function EditProfileDialog({ isOpen, onClose }: EditProfileDialogProps) {
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               rows={3}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              type="text"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="state">State</Label>
+            <Input
+              id="state"
+              type="text"
+              value={formData.state}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
               required
             />
           </div>

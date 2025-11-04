@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Twitter } from "lucide-react";
-import React from "react";
+
 export function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground">

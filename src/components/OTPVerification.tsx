@@ -1,8 +1,7 @@
-import React from "react";
 import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 import { motion } from 'motion/react';
 
 interface OTPVerificationProps {
@@ -118,9 +117,7 @@ export function OTPVerification({ isOpen, onClose, onVerify, email }: OTPVerific
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <input
-                  ref={(el) => {
-                    inputRefs.current[index] = el;
-                  }}
+                  ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}

@@ -1,13 +1,12 @@
-import React from "react";
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from './AuthContext';
-import { toast } from 'sonner';
+import { toast } from 'sonner@2.0.3';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { OTPVerification } from './OTPVerification';
+import { ForgotPasswordDialog } from './ForgotPasswordDialog';
 
 interface LoginDialogProps {
   isOpen: boolean;
@@ -17,8 +16,7 @@ interface LoginDialogProps {
 export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
   const { login, signup } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [showOTPVerification, setShowOTPVerification] = useState(false);
-  const [pendingSignupEmail, setPendingSignupEmail] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -67,34 +65,23 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
         signupState
       );
       
-      // Store email for OTP verification
-      setPendingSignupEmail(signupEmail);
+      toast.success('Account created successfully!');
+      onClose();
       
-      // Show OTP verification dialog
-      setShowOTPVerification(true);
-      
-      toast.success('Please verify your account with the OTP sent to your email');
+      // Clear all signup form fields
+      setSignupName('');
+      setSignupEmail('');
+      setSignupPassword('');
+      setSignupPhone('');
+      setSignupOccupation('');
+      setSignupAddress1('');
+      setSignupCity('');
+      setSignupState('');
     } catch (error) {
       toast.error('Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleOTPVerified = () => {
-    setShowOTPVerification(false);
-    onClose();
-    
-    // Clear all signup form fields
-    setSignupName('');
-    setSignupEmail('');
-    setSignupPassword('');
-    setSignupPhone('');
-    setSignupOccupation('');
-    setSignupAddress1('');
-    setSignupCity('');
-    setSignupState('');
-    setPendingSignupEmail('');
   };
 
   return (
@@ -136,6 +123,15 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
                   onChange={(e) => setLoginPassword(e.target.value)}
                   required
                 />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot Password?
+                </button>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Login'}
@@ -243,12 +239,10 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
         </Tabs>
       </DialogContent>
 
-      {/* OTP Verification Dialog */}
-      <OTPVerification
-        isOpen={showOTPVerification}
-        onClose={() => setShowOTPVerification(false)}
-        onVerify={handleOTPVerified}
-        email={pendingSignupEmail}
+      {/* Forgot Password Dialog */}
+      <ForgotPasswordDialog
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
       />
     </Dialog>
   );

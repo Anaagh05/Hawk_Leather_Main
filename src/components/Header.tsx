@@ -1,4 +1,3 @@
-import React from "react";
 import { Menu, Search, ShoppingBag, X, User as UserIcon, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";

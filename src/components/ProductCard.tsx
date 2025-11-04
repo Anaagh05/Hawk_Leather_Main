@@ -1,16 +1,18 @@
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { motion } from "motion/react";
-import React from "react";
+
 interface ProductCardProps {
   name: string;
   price: string;
   image: string;
   category: string;
+  gender?: 'Men' | 'Women' | 'Unisex';
   onClick?: () => void;
 }
 
-export function ProductCard({ name, price, image, category, onClick }: ProductCardProps) {
+export function ProductCard({ name, price, image, category, gender, onClick }: ProductCardProps) {
   return (
     <motion.div
       className="group cursor-pointer"
@@ -27,7 +29,14 @@ export function ProductCard({ name, price, image, category, onClick }: ProductCa
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       </div>
       <div className="space-y-2">
-        <p className="text-muted-foreground text-sm">{category}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-muted-foreground text-sm">{category}</p>
+          {gender && (
+            <Badge variant="secondary" className="text-xs">
+              {gender}
+            </Badge>
+          )}
+        </div>
         <h3 className="group-hover:text-primary transition-colors">{name}</h3>
         <p className="text-foreground">{price}</p>
         <motion.div

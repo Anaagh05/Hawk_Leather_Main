@@ -1,6 +1,6 @@
-import React from "react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Product } from "./CartContext";
 import { motion } from "motion/react";
 
@@ -31,7 +31,14 @@ export function HorizontalProductCard({ product, onViewDetails }: HorizontalProd
         <div>
           <div className="flex items-start justify-between mb-2">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">{product.category}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm text-muted-foreground">{product.category}</p>
+                {product.gender && (
+                  <Badge variant="secondary" className="text-xs">
+                    {product.gender}
+                  </Badge>
+                )}
+              </div>
               <h3 className="mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
             </div>
             <p className="text-2xl">₹{product.price}</p>

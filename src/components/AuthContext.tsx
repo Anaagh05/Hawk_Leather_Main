@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import React from "react";
+
 interface User {
   id: string;
   name: string;
   email: string;
   phone?: string;
   address?: string;
+  city?: string;
+  state?: string;
   occupation?: string;
 }
 
@@ -24,7 +26,14 @@ interface AuthContextType {
     state: string
   ) => Promise<void>;
   logout: () => void;
-  updateProfile: (data: { name: string; phone: string; address: string; occupation: string }) => void;
+  updateProfile: (data: { 
+    name: string; 
+    phone: string; 
+    address: string; 
+    city: string; 
+    state: string; 
+    occupation: string 
+  }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,16 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Mock signup - in real app, this would call an API
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Combine address fields
-    const fullAddress = `${address}, ${city}, ${state}`;
-    
     setUser({
       id: '1',
       name: name,
       email: email,
       phone: phone,
       occupation: occupation,
-      address: fullAddress,
+      address: address,
+      city: city,
+      state: state,
     });
   };
 
@@ -73,13 +81,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  const updateProfile = (data: { name: string; phone: string; address: string; occupation: string }) => {
+  const updateProfile = (data: { 
+    name: string; 
+    phone: string; 
+    address: string; 
+    city: string; 
+    state: string; 
+    occupation: string 
+  }) => {
     if (user) {
       setUser({
         ...user,
         name: data.name,
         phone: data.phone,
         address: data.address,
+        city: data.city,
+        state: data.state,
         occupation: data.occupation,
       });
     }

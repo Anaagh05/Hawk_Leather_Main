@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import React from "react";
+
 export interface Product {
   id: string;
   name: string;
@@ -9,6 +9,7 @@ export interface Product {
   description?: string;
   details?: string[];
   features?: string[];
+  gender?: 'Men' | 'Women' | 'Unisex';
 }
 
 export interface CartItem extends Product {
