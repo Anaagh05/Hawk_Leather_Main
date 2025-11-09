@@ -9,7 +9,10 @@ interface HorizontalProductCardProps {
   onViewDetails: (product: Product) => void;
 }
 
-export function HorizontalProductCard({ product, onViewDetails }: HorizontalProductCardProps) {
+export function HorizontalProductCard({
+  product,
+  onViewDetails,
+}: HorizontalProductCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,33 +29,61 @@ export function HorizontalProductCard({ product, onViewDetails }: HorizontalProd
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
       </div>
-      
+
       <div className="flex-1 p-6 flex flex-col justify-between">
         <div>
           <div className="flex items-start justify-between mb-2">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm text-muted-foreground">{product.category}</p>
+                <p className="text-sm text-muted-foreground">
+                  {product.category}
+                </p>
                 {product.gender && (
                   <Badge variant="secondary" className="text-xs">
                     {product.gender}
                   </Badge>
                 )}
               </div>
-              <h3 className="mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
+              <h3 className="mb-2 group-hover:text-primary transition-colors">
+                {product.name}
+              </h3>
             </div>
-            <p className="text-2xl">₹{product.price}</p>
+
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-base text-muted-foreground/70"
+                  style={{ textDecoration: "line-through" }}
+                >
+                  ₹{product.price.toFixed(2)}
+                </span>
+                <span className="text-base font-medium text-red-500">
+                  -
+                  {(
+                    ((product.price - product.mrpPrice) / product.price) *
+                    100
+                  ).toFixed(0)}
+                  %
+                </span>
+              </div>
+              <p className="text-2xl font-semibold">
+                ₹{product.mrpPrice.toFixed(2)}
+              </p>
+            </div>
           </div>
-          
+
           <p className="text-muted-foreground mb-4 line-clamp-2">
             {product.description}
           </p>
-          
+
           <div className="mb-4">
             <p className="text-sm mb-2">Key Features:</p>
             <ul className="space-y-1">
               {product.features?.slice(0, 3).map((feature, index) => (
-                <li key={index} className="text-sm text-muted-foreground flex items-start">
+                <li
+                  key={index}
+                  className="text-sm text-muted-foreground flex items-start"
+                >
                   <span className="mr-2">•</span>
                   <span>{feature}</span>
                 </li>
@@ -60,7 +91,7 @@ export function HorizontalProductCard({ product, onViewDetails }: HorizontalProd
             </ul>
           </div>
         </div>
-        
+
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
             variant="outline"

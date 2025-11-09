@@ -5,14 +5,23 @@ import { motion } from "motion/react";
 
 interface ProductCardProps {
   name: string;
-  price: string;
+  price: number;
+  mrpPrice: number;
   image: string;
   category: string;
-  gender?: 'Men' | 'Women' | 'Unisex';
+  gender?: "Men" | "Women" | "Unisex";
   onClick?: () => void;
 }
 
-export function ProductCard({ name, price, image, category, gender, onClick }: ProductCardProps) {
+export function ProductCard({
+  name,
+  price,
+  mrpPrice,
+  image,
+  category,
+  gender,
+  onClick,
+}: ProductCardProps) {
   return (
     <motion.div
       className="group cursor-pointer"
@@ -38,7 +47,20 @@ export function ProductCard({ name, price, image, category, gender, onClick }: P
           )}
         </div>
         <h3 className="group-hover:text-primary transition-colors">{name}</h3>
-        <p className="text-foreground">{price}</p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm text-muted-foreground/70"
+              style={{ textDecoration: "line-through" }}
+            >
+              ₹{price.toFixed(2)}
+            </span>
+            <span className="text-sm font-medium text-red-500">
+              -{(((price - mrpPrice) / price) * 100).toFixed(0)}%
+            </span>
+          </div>
+          <p className="text-lg font-semibold">₹{mrpPrice.toFixed(2)}</p>
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 0, y: 10 }}

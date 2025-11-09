@@ -4,7 +4,7 @@ import { Badge } from "./ui/badge";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Product, useCart } from "./CartContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 interface ProductDetailProps {
   product: Product;
@@ -22,11 +22,7 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={onBack}
-        >
+        <Button variant="ghost" className="mb-6" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Products
         </Button>
@@ -53,7 +49,27 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                 )}
               </div>
               <h1 className="mb-4">{product.name}</h1>
-              <p className="text-3xl">₹{product.price.toFixed(2)}</p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-xl text-muted-foreground/70"
+                    style={{ textDecoration: "line-through" }}
+                  >
+                    ₹{product.price.toFixed(2)}
+                  </span>
+                  <span className="text-xl font-medium text-red-500">
+                    -
+                    {(
+                      ((product.price - product.mrpPrice) / product.price) *
+                      100
+                    ).toFixed(0)}
+                    %
+                  </span>
+                </div>
+                <p className="text-3xl font-semibold">
+                  ₹{product.mrpPrice.toFixed(2)}
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -92,7 +108,9 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                 </div>
                 <div>
                   <p className="text-sm">Free Shipping</p>
-                  <p className="text-xs text-muted-foreground">Orders over ₹200</p>
+                  <p className="text-xs text-muted-foreground">
+                    Orders over ₹200
+                  </p>
                 </div>
               </div>
 
@@ -102,7 +120,9 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                 </div>
                 <div>
                   <p className="text-sm">Lifetime Warranty</p>
-                  <p className="text-xs text-muted-foreground">On all products</p>
+                  <p className="text-xs text-muted-foreground">
+                    On all products
+                  </p>
                 </div>
               </div>
 
@@ -127,22 +147,27 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
               <TabsTrigger value="materials">Materials</TabsTrigger>
               <TabsTrigger value="care">Care</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="details" className="mt-6 space-y-4">
               <h3>Product Details</h3>
               <ul className="space-y-2 text-muted-foreground">
-                {product.details?.map((detail, index) => (
-                  <li key={index}>• {detail}</li>
-                ))}
+                <li>• Premium full-grain leather</li>
+                <li>• Hand-finished edges</li>
+                <li>• Tarnish-resistant hardware</li>
+                <li>• Develops unique patina</li>
+                <li>• Made to last generations</li>
+                <li>• Lifetime warranty included</li>
               </ul>
             </TabsContent>
-            
+
             <TabsContent value="materials" className="mt-6 space-y-4">
               <h3>Materials & Construction</h3>
               <p className="text-muted-foreground">
-                Crafted from premium full-grain leather sourced from environmentally responsible tanneries. 
-                Our leather is vegetable-tanned for durability and develops a rich patina over time. 
-                All hardware is solid brass with a protective coating to prevent tarnishing.
+                Crafted from premium full-grain leather sourced from
+                environmentally responsible tanneries. Our leather is
+                vegetable-tanned for durability and develops a rich patina over
+                time. All hardware is solid brass with a protective coating to
+                prevent tarnishing.
               </p>
               <ul className="space-y-2 text-muted-foreground mt-4">
                 <li>• 100% Full-Grain Leather</li>
@@ -152,11 +177,12 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                 <li>• Hand-Stitched Seams</li>
               </ul>
             </TabsContent>
-            
+
             <TabsContent value="care" className="mt-6 space-y-4">
               <h3>Care Instructions</h3>
               <p className="text-muted-foreground">
-                Proper care will ensure your leather goods age beautifully and last for generations.
+                Proper care will ensure your leather goods age beautifully and
+                last for generations.
               </p>
               <ul className="space-y-2 text-muted-foreground mt-4">
                 <li>• Clean with a soft, dry cloth</li>

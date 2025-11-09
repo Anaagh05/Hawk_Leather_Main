@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { useAuth } from './AuthContext';
-import { toast } from 'sonner@2.0.3';
+// src/components/EditProfileDialog.tsx
+
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { useAuth } from "./AuthContext";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface EditProfileDialogProps {
   isOpen: boolean;
@@ -15,42 +23,52 @@ interface EditProfileDialogProps {
 export function EditProfileDialog({ isOpen, onClose }: EditProfileDialogProps) {
   const { user, updateProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    occupation: '',
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    occupation: "",
+    pincode: "",
   });
 
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || '',
-        phone: user.phone || '+1 (555) 123-4567',
-        address: user.address || '123 Main Street',
-        city: user.city || 'New York',
-        state: user.state || 'NY',
-        occupation: user.occupation || 'Software Developer',
+        name: user.userName || "",
+        phone: user.phoneNumber?.toString() || "",
+        address: user.streetAddress || "",
+        city: user.city || "",
+        state: user.state || "",
+        occupation: user.occupation || "",
+        pincode: user.pincode?.toString() || "",
       });
     }
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
+    if (
+      !formData.name ||
+      !formData.phone ||
+      !formData.address ||
+      !formData.city ||
+      !formData.state ||
+      !formData.occupation ||
+      !formData.pincode
+    ) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      updateProfile(formData);
-      toast.success('Profile updated successfully!');
+      await updateProfile(formData);
       onClose();
     } catch (error) {
-      toast.error('Failed to update profile. Please try again.');
+      // Error toast already shown in AuthContext
     } finally {
       setIsLoading(false);
     }
@@ -58,99 +76,118 @@ export function EditProfileDialog({ isOpen, onClose }: EditProfileDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
-          <DialogDescription>
-            Update your profile information below
-          </DialogDescription>
+          <DialogDescription>Update your profile information</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="edit-name">Full Name</Label>
             <Input
-              id="name"
-              type="text"
+              id="edit-name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="edit-phone">Phone Number</Label>
             <Input
-              id="email"
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="bg-muted cursor-not-allowed"
-            />
-            <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
+              id="edit-phone"
               type="tel"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="occupation">Occupation</Label>
+            <Label htmlFor="edit-occupation">Occupation</Label>
             <Input
-              id="occupation"
-              type="text"
+              id="edit-occupation"
               value={formData.occupation}
-              onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, occupation: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Textarea
-              id="address"
+            <Label htmlFor="edit-address">Street Address</Label>
+            <Input
+              id="edit-address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              rows={3}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-city">City</Label>
+              <Input
+                id="edit-city"
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData({ ...formData, city: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-state">State</Label>
+              <Input
+                id="edit-state"
+                value={formData.state}
+                onChange={(e) =>
+                  setFormData({ ...formData, state: e.target.value })
+                }
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
+            <Label htmlFor="edit-pincode">Pincode</Label>
             <Input
-              id="city"
-              type="text"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              id="edit-pincode"
+              value={formData.pincode}
+              onChange={(e) =>
+                setFormData({ ...formData, pincode: e.target.value })
+              }
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="state">State</Label>
-            <Input
-              id="state"
-              type="text"
-              value={formData.state}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button type="submit" className="flex-1" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
               Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </div>
         </form>
