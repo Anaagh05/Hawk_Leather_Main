@@ -3,6 +3,7 @@
 import { getAuthHeaders } from './api';
 
 const API_BASE_URL = 'https://hawk-leather-backend.vercel.app/api/v1';
+// const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -58,6 +59,27 @@ export interface CreateOrderRequest {
   shippingAddress: ShippingAddress;
   paymentMethod: 'cod' | 'online';
 }
+
+
+export interface RazorpayOrderResponse {
+  success: boolean;
+  message: string;
+  data: {
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+  };
+}
+
+export interface RazorpayPaymentVerificationRequest {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  shippingAddress: ShippingAddress;
+}
+
+
 
 // ==================== ORDER APIs ====================
 
@@ -146,6 +168,67 @@ export const createOrder = async (
     throw error;
   }
 };
+
+
+/**
+ * Create Razorpay order (Step 1 of online payment)
+ */
+export const createRazorpayOrder = async (
+  shippingAddress: ShippingAddress
+): Promise<RazorpayOrderResponse> => {
+  try {
+    const url = `${API_BASE_URL}/orders/razorpay/create`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ shippingAddress }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create Razorpay order');
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Error creating Razorpay order:', error);
+    throw error;
+  }
+};
+
+/**
+ * Verify Razorpay payment (Step 2 of online payment)
+ */
+export const verifyRazorpayPayment = async (
+  paymentData: RazorpayPaymentVerificationRequest
+): Promise<{
+  success: boolean;
+  message: string;
+  data: BackendOrder;
+}> => {
+  try {
+    const url = `${API_BASE_URL}/orders/razorpay/verify`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(paymentData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to verify payment');
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Error verifying payment:', error);
+    throw error;
+  }
+};
+
+
 
 // Helper function to map backend order to frontend format
 export const mapBackendOrderToFrontend = (backendOrder: BackendOrder) => {

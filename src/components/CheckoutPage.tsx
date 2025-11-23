@@ -1,6 +1,7 @@
 // src/components/CheckoutPage.tsx
 
 import { useState } from "react";
+import { CreateOrderRequest } from "../services/orderApi";
 import {
   ArrowLeft,
   CreditCard,
@@ -29,7 +30,19 @@ import {
   TableRow,
 } from "./ui/table";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { createOrder } from "../services/orderApi";
+import {
+  createOrder,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+} from "../services/orderApi";
+
+
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface CheckoutPageProps {
   onBack: () => void;
@@ -107,30 +120,106 @@ export function CheckoutPage({ onBack }: CheckoutPageProps) {
     }
 
     setIsPlacingOrder(true);
+
     try {
-      const orderData = {
-        shippingAddress: {
+      // COD Flow - Direct order creation
+      if (paymentMethod === "cod") {
+        const orderData: CreateOrderRequest = {
+          shippingAddress: {
+            street: shippingAddress.street,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            pincode: shippingAddress.pincode,
+            phone: shippingAddress.phone,
+          },
+          paymentMethod: "cod" as const,
+        };
+
+        const response = await createOrder(orderData);
+        toast.success("Order placed successfully!");
+        clearCart();
+
+        setTimeout(() => {
+          onBack();
+        }, 1500);
+      }
+      // Online Payment Flow - Razorpay Integration
+      else if (paymentMethod === "online") {
+        // Step 1: Create Razorpay order
+        const razorpayOrderResponse = await createRazorpayOrder({
           street: shippingAddress.street,
           city: shippingAddress.city,
           state: shippingAddress.state,
           pincode: shippingAddress.pincode,
           phone: shippingAddress.phone,
-        },
-        paymentMethod,
-      };
+        });
 
-      const response = await createOrder(orderData);
+        // Step 2: Open Razorpay payment gateway
+        const options = {
+          key: razorpayOrderResponse.data.keyId,
+          amount: razorpayOrderResponse.data.amount * 100, // Amount in paise
+          currency: razorpayOrderResponse.data.currency,
+          name: "Hawk Leather",
+          description: "Purchase Premium Leather Products",
+          order_id: razorpayOrderResponse.data.orderId,
+          prefill: {
+            name: user?.userName || "",
+            email: user?.userEmail || "",
+            contact: shippingAddress.phone || "",
+          },
+          theme: {
+            color: "#8B4513", // Brown color for leather theme
+          },
+          handler: async function (response: any) {
+            try {
+              // Step 3: Verify payment on backend
+              const verificationData = {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                shippingAddress: {
+                  street: shippingAddress.street,
+                  city: shippingAddress.city,
+                  state: shippingAddress.state,
+                  pincode: shippingAddress.pincode,
+                  phone: shippingAddress.phone,
+                },
+              };
 
-      toast.success("Order placed successfully!");
-      clearCart(); // Clear cart after successful order
+              const verifyResponse = await verifyRazorpayPayment(verificationData);
 
-      // Redirect back to profile after 1.5 seconds
-      setTimeout(() => {
-        onBack();
-      }, 1500);
+              toast.success("Payment successful! Order placed.");
+              clearCart();
+
+              setTimeout(() => {
+                onBack();
+              }, 1500);
+            } catch (error: any) {
+              toast.error(error.message || "Payment verification failed");
+            } finally {
+              setIsPlacingOrder(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              toast.error("Payment cancelled");
+              setIsPlacingOrder(false);
+            },
+          },
+        };
+
+        // Check if Razorpay is loaded
+        if (typeof window.Razorpay === "undefined") {
+          toast.error("Payment gateway not loaded. Please refresh the page.");
+          setIsPlacingOrder(false);
+          return;
+        }
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to place order");
-    } finally {
       setIsPlacingOrder(false);
     }
   };
@@ -437,7 +526,7 @@ export function CheckoutPage({ onBack }: CheckoutPageProps) {
                                     Math.round(
                                       ((item.price - item.mrpPrice) /
                                         item.price) *
-                                        100
+                                      100
                                     )}
                                   %
                                 </span>
