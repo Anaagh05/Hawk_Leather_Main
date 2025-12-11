@@ -7,7 +7,17 @@ import {
   Mail,
 } from "lucide-react";
 
-export function Footer() {
+interface FooterProps {
+  onBagsClick?: () => void;
+  onPursesClick?: () => void;
+  onBeltsClick?: () => void;
+}
+
+export function Footer({
+  onBagsClick,
+  onPursesClick,
+  onBeltsClick,
+}: FooterProps) {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -26,28 +36,28 @@ export function Footer() {
             <h4 className="text-primary-foreground">Shop</h4>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#bags"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                <button
+                  onClick={onBagsClick}
+                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors cursor-pointer"
                 >
                   Bags
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#purses"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                <button
+                  onClick={onPursesClick}
+                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors cursor-pointer"
                 >
                   Purses
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#belts"
-                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                <button
+                  onClick={onBeltsClick}
+                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors cursor-pointer"
                 >
                   Belts
-                </a>
+                </button>
               </li>
             </ul>
           </div>

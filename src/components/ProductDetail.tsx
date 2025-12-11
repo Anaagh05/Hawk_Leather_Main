@@ -72,15 +72,6 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-primary text-primary" />
-                ))}
-              </div>
-              <span className="text-muted-foreground">(128 reviews)</span>
-            </div>
-
             <p className="text-muted-foreground">{product.description}</p>
 
             <div className="space-y-3">

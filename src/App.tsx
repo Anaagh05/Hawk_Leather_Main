@@ -588,7 +588,11 @@ function AppContent() {
 
       {renderContent()}
 
-      <Footer />
+      <Footer
+        onBagsClick={() => handleCategoryClick("bags")}
+        onPursesClick={() => handleCategoryClick("purses")}
+        onBeltsClick={() => handleCategoryClick("belts")}
+      />
 
       <CartDrawer
         isOpen={isCartOpen}
